@@ -19,9 +19,16 @@ its own ticket, so each fix can be tracked and closed on its own.
 
 <SplitTable ticket={4471} repo="wjarka/mega-s01e03-what-it-shows" tickets={{ parser: 1, hint: 2, shift: 3 }} />
 
+## Where each ticket stands
+
+Engineering closed #4471 on 5 October. Its update covers two of the three problems:
+
+- <code>parser</code>: fixed, "fix(dates): parse dd/mm for eu locales". Ticket closed as done.
+- <code>hint</code>: won't fix, the booking-v3 form is retired. Ticket closed as not planned.
+
 <Callout kind="warn">
-#4471 is not "known, one fix queued". The queued parser fix leaves the <code>hint</code> and
-<code>shift</code> reports open.
+<code>shift</code> has no fix. The parser fix reads the date order; these reports have the right
+order and the wrong day. Its ticket stays open.
 </Callout>
 
 ## The problems
@@ -44,8 +51,9 @@ booking-v3 tenant. The parser fix does not reach this: the form must show the or
 These reports keep day and month as they were: "Invite says Tuesday 12 May. Calendar says Monday
 11 May." A client in Lisbon got Tuesday and a client in Toronto got Monday, for the same meeting.
 That points at time zones or the day boundary, not at the date order. The desk already read these
-as one-day moves (`desk-notes.json`), but the incident page still counts them under `parser` by
-tenant. Neither date-order fix touches them.
+as one-day moves (`desk-notes.json`) and counts them under `parser`, where their tenant files them;
+the table above counts them there too, and again as their own problem. Neither date-order fix
+touches them.
 
 ## How the count was made
 

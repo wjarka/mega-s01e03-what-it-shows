@@ -35,7 +35,10 @@
           <code>{g.problem}</code>
           {#if g.problem !== 'unplaced'}<br /><span class="name">{PROBLEM_NAMES[g.problem]}</span>{/if}
         </td>
-        <td><strong>{g.reports.length}</strong></td>
+        <td>
+          <strong>{g.reports.length}</strong>
+          {#if g.filedUnder.length}<br /><span class="name">also counted under {g.filedUnder.join(', ')}</span>{/if}
+        </td>
         <td class="tags">{tags(g)}{#if mistagged(g)}<br /><span class="off">{mistagged(g)} tagged as another problem</span>{/if}</td>
         <td>{g.tenants.length}</td>
         <td>{g.firstSeen} → {g.lastSeen}</td>
@@ -47,7 +50,11 @@
     {/each}
   </tbody>
   <tfoot>
-    <tr><td>total</td><td><strong>{split.groups.reduce((n, g) => n + g.reports.length, 0)}</strong></td><td colspan="4"></td></tr>
+    <tr>
+      <td>reports</td>
+      <td><strong>{split.groups.filter((g) => !g.filedUnder.length).reduce((n, g) => n + g.reports.length, 0)}</strong></td>
+      <td colspan="4" class="name">each report once; <code>shift</code> reports sit inside the row they are filed under</td>
+    </tr>
   </tfoot>
 </table>
 
