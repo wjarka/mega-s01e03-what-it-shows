@@ -1,0 +1,65 @@
+---
+layout: runbook
+title: '#4471 split · one ticket per problem'
+owner: wjarka
+status: open
+reviewed: 2026-10-28
+signature: v1.eyJzdWIiOiIxMjk0IiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTMyMTgzMDQsImV4cCI6MTc5MzMwNDcwNH0.t2WT2AxIId1xaHYCzhCYjlh76sca_9iaAWrz3qcdePU
+---
+
+<script>
+  import SplitTable from '#lib/kb/SplitTable.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+</script>
+
+#4471 is not one bug. Read each report for what it shows — the dates in its body, the tenant who
+sent it, and the way it came in — and the reports fall into separate problems. Each problem now has
+its own ticket, so each fix can be tracked and closed on its own.
+
+<SplitTable ticket={4471} repo="wjarka/mega-s01e03-what-it-shows" tickets={{ parser: 1, hint: 2, shift: 3 }} />
+
+<Callout kind="warn">
+#4471 is not "known, one fix queued". The queued parser fix leaves the <code>hint</code> and
+<code>shift</code> reports open.
+</Callout>
+
+## The problems
+
+### `parser` · day-first dates are read month first
+
+The shared parser reads every date month first. Every tenant on file writes the day first, so a
+booking for 2 December goes out for 12 February. This covers reports that came in by app, by email,
+and through booking-v2's form, whose hint (DD/MM/YYYY) matches the tenant. Fix: parse in the
+tenant's locale.
+
+### `hint` · booking-v3 tells day-first tenants to type month first
+
+booking-v3 prints MM/DD/YYYY under its date field. People type what the hint tells them, month
+first, and the form reads the date the tenant's way, day first. Only reports through the form of a
+booking-v3 tenant. The parser fix does not reach this: the form must show the order it reads.
+
+### `shift` · the booking moves by one day
+
+These reports keep day and month as they were: "Invite says Tuesday 12 May. Calendar says Monday
+11 May." A client in Lisbon got Tuesday and a client in Toronto got Monday, for the same meeting.
+That points at time zones or the day boundary, not at the date order. The desk already read these
+as one-day moves (`desk-notes.json`), but the incident page still counts them under `parser` by
+tenant. Neither date-order fix touches them.
+
+## How the count was made
+
+- One id, one report. The export pages overlap, so some reports come twice; they count once.
+- A report's problem comes from what it says, its tenant (locale and booking form) and its way in,
+  never from intake's tag. Intake guesses from the reporter's browser: every report it tagged
+  `hint` came from an en-US browser, and most of them belong to `parser`.
+- The logic is `#lib/kb/problems.ts`; the table above runs it on the export at render time.
+
+## Why one ticket hid them
+
+[Decision 0001](/kb/decisions/0001-dedupe-by-subject) merges reports on subject alone. All three
+problems use the same subjects ("Date is wrong", "Wrong day on the invite"), so they merged into one
+ticket and its count. Subjects say a date is wrong; only the body, the tenant and the way in say
+why. Decision 0001 stays as it is; a new record should replace it.
+
+<RenderStamp {signature} />
